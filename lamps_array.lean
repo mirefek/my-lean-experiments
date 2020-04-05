@@ -3,6 +3,7 @@ import tactic.norm_cast
 import data.rat
 import data.fintype
 import data.real.basic
+import data.nat.parity
 
 noncomputable theory
 open_locale classical
@@ -46,10 +47,8 @@ def M_num (n k : ℕ) := fintype.card (M_seq n k)
 
 /- The statement of the theorem -/
 
--- TODO!!! it should be also stated that k, n are of the same parity, otherwise it is false
-
 def lamp_prop : Prop :=
-  ∀ n k : ℕ, 0 < n → n ≤ k →
+  ∀ n k : ℕ, 0 < n → n ≤ k → nat.even (k-n) →
     (N_num n k : ℚ) / (M_num n k) = 2^(k-n)
 
 /- Proof -/
@@ -92,7 +91,7 @@ def nontriv_seq (n k : ℕ) (n_pos : 0 < n) : lamp_switch_seq n k :=
       (nontriv_val_big n_pos)
   ⟩
 
-lemma nontriv_correct (n k : ℕ) (n_pos : 0 < n)
+lemma nontriv_correct (n k : ℕ) (n_pos : 0 < n) (nk_lt : n ≤ k) (nk_parity : nat.even (k-n))
   : is_N_seq (nontriv_seq n k n_pos)
 :=
 begin
@@ -128,14 +127,18 @@ lemma fintype.card_pos (α : Type) [ft : fintype α] (x : α)
   show x ∈ finset.univ, from finset.mem_univ x
 end
 
-lemma M_num_nontriv {n k : ℕ} (n_pos : 0 < n) (nk_le : n ≤ k)
+lemma M_num_nontriv {n k : ℕ} (n_pos : 0 < n) (nk_le : n ≤ k) (nk_parity : nat.even (k-n))
   : M_num n k > 0
 :=
 begin
   let seq : lamp_switch_seq n k := (nontriv_seq n k n_pos),
   have : is_M_seq seq, begin
     apply and.intro,
-    show is_N_seq seq, by apply nontriv_correct,
+    show is_N_seq seq, begin
+      apply nontriv_correct,
+      show n ≤ k, from nk_le,
+      show nat.even (k-n), from nk_parity,
+    end,
     show ∀ l ∈ seq, ↑l < n, by apply nontriv_all_small,
   end,
   apply fintype.card_pos,
@@ -160,12 +163,12 @@ end
 
 theorem lamp_thm : lamp_prop
 := begin
-  show ∀ n k : ℕ, 0 < n → n ≤ k →
+  show ∀ n k : ℕ, 0 < n → n ≤ k → nat.even (k-n) →
     (N_num n k : ℚ) / (M_num n k) = 2^(k-n),
-  intros n k n_pos nk_le,
+  intros n k n_pos nk_le nk_parity,
   apply lamp_arith,
     show N_num n k * 2^n = D_num n k, by apply N_num_by_D_num,
     show M_num n k * 2^k = D_num n k, by apply M_num_by_D_num,
-    show M_num n k > 0, from M_num_nontriv n_pos nk_le,
+    show M_num n k > 0, from M_num_nontriv n_pos nk_le nk_parity,
     show n ≤ k, from nk_le,
 end
