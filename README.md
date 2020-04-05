@@ -7,3 +7,7 @@ Grasshopper
 ----
 * The original problem: http://imo-official.org/problems/IMO2009SL.pdf, C7
 * My informal solution that I am trying to follow: http://www.olsak.net/mirek/grasshopper-informal
+
+Lamps
+----
+* The original problem: http://imo-official.org/problems/IMO2008SL.pdf, C4
